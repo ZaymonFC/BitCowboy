@@ -401,6 +401,11 @@
               <FileType>1</FileType>
               <FilePath>.\Lcd_Bits.c</FilePath>
             </File>
+            <File>
+              <FileName>gpio_bits_lcd.o</FileName>
+              <FileType>3</FileType>
+              <FilePath>.\gpio_bits_lcd.o</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

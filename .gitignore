@@ -57,3 +57,4 @@ dkms.conf
 *.lst
 
 *.htm
+Graphics/tileCreator/node_modules

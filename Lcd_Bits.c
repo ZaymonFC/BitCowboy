@@ -151,7 +151,3 @@ void LCD_Init(void)
      LCD_Contrast(5,50);  // inputs: ratio, contrast
      LCD_Cmd_Out(0xF0);
 }
-
-
-
-
