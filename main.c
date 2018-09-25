@@ -57,7 +57,7 @@ int main(void)
 	LCD_Init();
 	LCD_Blank();
 	
-	for (int i = 0; i < 100; i = i + 2) {
+	for (int i = 0; i < 127; i = i + 2) {
 		LCD_Blank();
 		DrawMap(i, 0, &map);
 		DelayMs(10);
