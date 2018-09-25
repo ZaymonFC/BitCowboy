@@ -1,12 +1,13 @@
 const getPixels = require('get-pixels')
 
-const numberOfTiles = 7
+const numberOfTiles = 12
 const tileSize = 16
 const tilesPerRow = 6
 
 const fs = require('fs')
+const inputFile = 'Tileset.png'
 
-getPixels('Tileset.png', (err, pixels) => {
+getPixels(inputFile, (err, pixels) => {
     if (err) throw err
     console.log('Got Pixels:', pixels.shape.slice())
 
@@ -31,19 +32,20 @@ function createTileData(pixels, tileNumber, tileSize) {
         y: (Math.floor(tileNumber / tilesPerRow)) * tileSize
     }
 
+
     let data = []
     for (let row = coord.y; row < coord.y + tileSize; row++) {
         // Write the row into the data array
         for (let col = coord.x; col < coord.x + tileSize; col++) {
-            const pixel = pixels.get(col, row, 0)
-            if (pixel === 255) {
+            const pixel = pixels.get(col, row, 1)
+            if (pixel > 10) {
                 data.push(0)
             } else {
                 data.push(1)
             }
         }
     }
-    console.log(data)
+
     return data
 }
 
@@ -63,7 +65,9 @@ function createCArrays(tileData) {
         arrayString += ` ${string}, \n`
     }
     arrayString += '\n}'
-    console.log(arrayString)
 
-    fs.writeFileSync('generatedArray.txt', arrayString)
+    const filename = 'generatedArray.txt'
+    fs.writeFileSync(filename, arrayString)
+    console.log('Created C Array from TileSet')
+    console.log(`Input: ${inputFile}\nCreated ${numberOfTiles} tiles.\nOutput: ${filename}`)
 }

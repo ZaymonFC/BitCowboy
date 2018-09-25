@@ -25,6 +25,7 @@ extern unsigned int APBases[6];
     
 void LCD_PutPixel(unsigned int x, unsigned int y, unsigned int col)
 {   //R5 = x = 1-128, R6 = y= 1-64  R7= colour
+		if (y > 64 || x > 128) return;
     unsigned int divb, rem, matpos, val;
     x = x-1;
     if (y<33)
