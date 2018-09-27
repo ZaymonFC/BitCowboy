@@ -1,0 +1,40 @@
+game loop;
+while (playing){
+  |clear lcd matrix|;
+  process inputs;
+  updateVelocities(inputs);
+  update positions(velocities);
+  calculate collisions;
+  if (collision) {
+    calculate collision direction;
+    update velocities;
+    update position;
+  }
+  render game;
+}
+
+
+function updateVelocities(inputs) {
+  if (leftPressed and rightPressed){
+    x velocity = 0;
+  } else if (leftPressed) {
+    x velocity = - playerSpeed;
+  } else if (rightPressed){
+    x velocity = playerSpeed;
+  }
+  if (jumpPressed and not inAir) {
+    y velocity = jump velocity;
+  }
+  return return;
+}
+
+function updatePositions(velocities) {
+  x position += x velocity;
+  y position += y velocity;
+  return return;
+}
+
+function calculateCollisions() {
+  
+}
+

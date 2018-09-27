@@ -6,7 +6,9 @@ void LCD_Blank(void);
 void LCD_Char_Out(unsigned char);
 void LCD_Dat_Out(unsigned char);
 void LCD_Cmd_Out(unsigned char);
-void LCD_Init(void);  
+void LCD_Init(void);
+void LCD_CLEAR_MAT(void);
+
 extern void GPIO_Setup_LCD(void);
 extern unsigned int getportbases(void);
 
@@ -25,7 +27,9 @@ extern unsigned int APBases[6];
     
 void LCD_PutPixel(unsigned int x, unsigned int y, unsigned int col)
 {   //R5 = x = 1-128, R6 = y= 1-64  R7= colour
-		if (y > 64 || x > 128) return;
+		if (y > 65 || x > 129) return;
+		if (y < 1 || x < 1) return;
+	
     unsigned int divb, rem, matpos, val;
     x = x-1;
     if (y<33)
@@ -78,6 +82,14 @@ void LCD_Blank(void)
 {   for (int i=0; i<1024; i++)
     {  LCDmat[i]=0;  }
     LCD_Refresh();
+}
+
+void LCD_CLEAR_MAT(void)
+{
+	for (int i = 0; i < 1024; i++)
+	{
+		LCDmat[i] = 0;
+	}
 }
         
 void LCD_Char_Out(unsigned char cmd)

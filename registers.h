@@ -3,6 +3,9 @@
 #define SYSCTL_RCGCGPIO 	(*((volatile unsigned long *)0x400FE608))
 #define SYSCTL_PRGPIO 	(*((volatile unsigned long *)0x400FEA08))
 
+#define RCGCTIMER 	(*((volatile unsigned long *)0x400FE604))
+#define PRTIMER 	(*((volatile unsigned long *)0x400FEA04))
+
 #define NVIC_ST_CTRL 	  (*((volatile unsigned long *)0xE000E010))
 #define NVIC_ST_RELOAD 	(*((volatile unsigned long *)0xE000E014))
 #define NVIC_ST_CURRENT	(*((volatile unsigned long *)0xE000E018))
@@ -34,6 +37,28 @@
 #define GPIOF_DEN 	(*((volatile unsigned long *)0x4002551C))
 #define GPIOF_ICR  	(*((unsigned long *)0x4002541C))
 
+#define GPIOD_DATA	(*((unsigned long *)0x400073FC))
+#define GPIOD_DIR 	(*((volatile unsigned long *)0x40007400))
+#define GPIOD_AFSEL 	(*((volatile unsigned long *)0x40007420))
+#define GPIOD_PCTL 	(*((volatile unsigned long *)0x4000752C))
+#define GPIOD_AMSEL 	(*((volatile unsigned long *)0x40007528))
+#define GPIOD_PUR 	(*((volatile unsigned long *)0x40007510))
+#define GPIOD_PDR 	(*((volatile unsigned long *)0x40007514))
+#define GPIOD_DR8R 	(*((volatile unsigned long *)0x40007508))
+#define GPIOD_DEN 	(*((volatile unsigned long *)0x4000751C))
+#define GPIOD_ICR  	(*((unsigned long *)0x4000741C))
+
+#define GPIOC_DATA	(*((unsigned long *)0x400063FC))
+#define GPIOC_DIR 	(*((volatile unsigned long *)0x40006400))
+#define GPIOC_AFSEL 	(*((volatile unsigned long *)0x40006420))
+#define GPIOC_PCTL 	(*((volatile unsigned long *)0x4000652C))
+#define GPIOC_AMSEL 	(*((volatile unsigned long *)0x40006528))
+#define GPIOC_PUR 	(*((volatile unsigned long *)0x40006510))
+#define GPIOC_PDR 	(*((volatile unsigned long *)0x40006514))
+#define GPIOC_DR8R 	(*((volatile unsigned long *)0x40006508))
+#define GPIOC_DEN 	(*((volatile unsigned long *)0x4000651C))
+#define GPIOC_ICR  	(*((unsigned long *)0x4000641C))
+
 #define UART0_DR 	(*((volatile unsigned long *)0x4000C000))
 #define UART0_FR 	(*((volatile unsigned long *)0x4000C018))
 #define UART0_IBRD 	(*((volatile unsigned long *)0x4000C024))
@@ -41,4 +66,9 @@
 #define UART0_LCRH 	(*((volatile unsigned long *)0x4000C02C))
 #define UART0_CTL 	(*((volatile unsigned long *)0x4000C030))
 
+#define TIMER1_CFG (*((volatile unsigned long *) 0x40031000))
+#define TIMER1_CTL (*((volatile unsigned long *) 0x4003100C))
+#define TIMER1_TAMR (*((volatile unsigned long *) 0x40031004))
+#define TIMER1_TAILR (*((volatile unsigned long *) 0x40031028))
+#define TIMER1_TAMATCH (*((volatile unsigned long *) 0x40031030))
 

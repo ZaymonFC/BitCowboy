@@ -9,6 +9,10 @@ extern void LCD_Refresh(void);
 extern void LCD_Blank(void);
 extern void LCD_Init(void);
 extern void GPIO_Setup_LCD(void);
+extern void LCD_CLEAR_MAT(void);
+
+extern void SetupRGB_PWM(void);
+extern void SetLCDColour(int r, int g, int b);
 
 unsigned char LCDmat[1056];
 unsigned int ABits[6] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20}; //[CSbit, RSTbit, A0bit, CLKbit, DATbit,B-]
@@ -41,7 +45,7 @@ int tiles[12][256] = {
 };
 
 // Forward Declarations
-void DrawMap(int xOffset, int yOffset, Map * map);
+void DrawMap(int xOffset, int yOffset, Map * map, const int MAP_TILES);
 void DrawTile(int tileNumber, int x, int y);
 
 int main(void)
@@ -51,22 +55,31 @@ int main(void)
 		4,
 	  { 9, 9, 8, 9, 9, 8, 8, 3, 9, 3, 9, 9, 8, 8, 8, 9, 3, 3, 3, 3, 3, 3, 12, 3, 3, 3, 3, 3, 9, 9, 8, 3, 1, 3, 3, 3, 3, 1, 10, 11, 1, 1, 1, 3, 3, 3, 3, 10, 11, 5, 7, 5, 7, 5, 10, 11, 5, 12, 12, 5, 7, 7, 5, 10 }
 	};
-	
 
+	const int MAP_TILES = map.width * map.height;
+	
+	// SetupRGB_PWM();
+	
 	GPIO_Setup_LCD();
 	LCD_Init();
 	LCD_Blank();
 	
-	for (int i = 0; i < 127; i = i + 2) {
-		LCD_Blank();
-		DrawMap(i, 0, &map);
-		DelayMs(10);
+	// `Game` Loop
+	int x = 0;
+	int increment = 1;
+	while(1) {
+		LCD_CLEAR_MAT();
+		DrawMap(x, 0, &map, MAP_TILES);
+		LCD_Refresh();
+		DelayMs(2);
+		x += increment;
+		if (x == 120 || x == 0) increment = -increment;
 	}
 	
 	while (1);
 }
 
-void DrawMap(int xOffset, int yOffset, struct Map * map) {
+void DrawMap(int xOffset, int yOffset, struct Map * map, const int MAP_TILES) {
 	// 'Intelligently' determine the range of tiles to draw and the offset for each tile.
 	// Calculate the tile coords of the top left tile on the screen
 	int tileX = xOffset / 16;
@@ -76,15 +89,16 @@ void DrawMap(int xOffset, int yOffset, struct Map * map) {
 	int tileOffsetX = xOffset % 16;
 	int tileOffsetY = yOffset % 16;
 
-	for (int row = 0; row < 4; row++) {
-		for (int col = 0; col < 9; col++) {
+	for (int row = 0; row < SCREEN_TILES_HEIGHT; row++) {
+		for (int col = 0; col < SCREEN_TILES_WIDTH + 1; col++) {
 			int x = col * 16 - tileOffsetX;
 			int y = row * 16 - tileOffsetY;
 			int tile = col + tileX + (row * map->width);
+
+			if (tile < 0 || tile > MAP_TILES) return;
 			DrawTile(map->tiles[tile], x, y);
 		}
 	}
-	LCD_Refresh();
 }
 
 void DrawTile(int tileNumber, int xOffset, int yOffset) {
