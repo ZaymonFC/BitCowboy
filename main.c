@@ -58,7 +58,7 @@ int main(void)
 
 	const int MAP_TILES = map.width * map.height;
 	
-	// SetupRGB_PWM();
+	SetupRGB_PWM();
 	
 	GPIO_Setup_LCD();
 	LCD_Init();
@@ -67,16 +67,22 @@ int main(void)
 	// `Game` Loop
 	int x = 0;
 	int increment = 1;
+	int colourIncrement = 2;
+	int green = 0;
+
 	while(1) {
+		SetLCDColour(0, green, 0);
 		LCD_CLEAR_MAT();
 		DrawMap(x, 0, &map, MAP_TILES);
 		LCD_Refresh();
 		DelayMs(2);
 		x += increment;
 		if (x == 120 || x == 0) increment = -increment;
+		
+		green += colourIncrement;
+		if (green == 100 || green == 0) colourIncrement = -colourIncrement;
 	}
 	
-	while (1);
 }
 
 void DrawMap(int xOffset, int yOffset, struct Map * map, const int MAP_TILES) {

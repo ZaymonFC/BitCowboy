@@ -39,9 +39,9 @@ function createTileData(pixels, tileNumber, tileSize) {
         for (let col = coord.x; col < coord.x + tileSize; col++) {
             const pixel = pixels.get(col, row, 1)
             if (pixel > 10) {
-                data.push(0)
-            } else {
                 data.push(1)
+            } else {
+                data.push(0)
             }
         }
     }

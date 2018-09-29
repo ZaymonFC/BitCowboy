@@ -3,8 +3,8 @@
 #define SYSCTL_RCGCGPIO 	(*((volatile unsigned long *)0x400FE608))
 #define SYSCTL_PRGPIO 	(*((volatile unsigned long *)0x400FEA08))
 
-#define RCGCTIMER 	(*((volatile unsigned long *)0x400FE604))
-#define PRTIMER 	(*((volatile unsigned long *)0x400FEA04))
+#define SYSCTL_RCGCTIMER 	(*((volatile unsigned long *)0x400FE604))
+#define SYSCTL_PRTIMER 	(*((volatile unsigned long *)0x400FEA04))
 
 #define NVIC_ST_CTRL 	  (*((volatile unsigned long *)0xE000E010))
 #define NVIC_ST_RELOAD 	(*((volatile unsigned long *)0xE000E014))

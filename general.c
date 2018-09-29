@@ -17,56 +17,69 @@ int Pow(int value, int exp) {
 	return value;
 }
 
-void SetupPWM_ForPin(int pin){ 
-	int portBit = 5;
-	int portValue = Pow(2, portBit);
+// Generic function to setup pins on port f for PWM output
+void Setup_GPIO_PWM_ForPin(int pinNumber){ 
+	int portFValue = 0x20; // Port F
 	
-	SYSCTL_RCGCGPIO |= portValue;
-	while ((SYSCTL_PRGPIO & portValue) != 1);
+	SYSCTL_RCGCGPIO |= portFValue;
+	while ((SYSCTL_PRGPIO & portFValue) != portFValue);
 	
-	int pinValue = 2 << pin;
+	int pinValue = 0x1 << pinNumber;
 	
 	GPIOF_DEN |= pinValue;
 	GPIOF_DIR |= pinValue;
 	GPIOF_AFSEL |= pinValue;
-	GPIOF_PCTL &= ~(0xF << pin);
-	GPIOF_PCTL |= (0x7 << pin);
+	
+	GPIOF_PCTL &= ~(0xF << (pinNumber * 4));
+	GPIOF_PCTL |= (0x7 << (pinNumber * 4));
 }
 
 void SetupRGB_PWM()
 {
-	// Setup PWM - PORT F
-	SetupPWM_ForPin(2);
-	// SetupPWM_ForPin(3);
-	// SetupPWM_ForPin(4);
+	// Setup F2, F3, F4
+	Setup_GPIO_PWM_ForPin(2);
+	Setup_GPIO_PWM_ForPin(3);
+	Setup_GPIO_PWM_ForPin(4);
 	
-	// Setup Timer 1 A
-	int timerBit = 2;
-	RCGCTIMER |= timerBit;
-	while ((PRTIMER & timerBit) != 1);
+  // Setup Timer 1 A
+	int timerBit = 0x1 << 1;
+	SYSCTL_RCGCTIMER |= timerBit;
+	while ((SYSCTL_PRTIMER & timerBit) != timerBit);
 
-	TIMER1_CTL &= ~0x1; // Turn off TAEN
-	TIMER1_CTL &= ~ (2 << 6);
-	TIMER1_CFG &= ~0x7; // Clear
+	TIMER1_CTL &= ~0x1; // Turn off TAEN (Bit 0)
+	TIMER1_CTL &= ~(0x1 << 6); // Not Inverted (Bit 6)
+	TIMER1_CFG &= ~0x7; // Clear (Bit 0-3)
 	TIMER1_CFG |= 0x4;  // 16 Bit Timer
 
-	TIMER1_TAMR |= 2 << 3; // Set TAAMS for PWM
-	TIMER1_TAMR &= ~(2 << 2); // Clear TACMR
-	TIMER1_TAMR |= 0x2; // Set TAMR
+	TIMER1_TAMR |= 0x1 << 3; // Set TAAMS for PWM (Bit 3)
+	TIMER1_TAMR &= ~(0x1 << 2); // Clear TACMR (Bit 2)
+	
+	TIMER1_TAMR &= ~0x3; // Clear TAMR
+	TIMER1_TAMR |= 0x2; // Set TAMR to Periodic
 
 	TIMER1_TAILR = 0xFFFF;
-	TIMER1_TAMATCH = 0x0001;
+	TIMER1_TAMATCH = 0xFFF0;
 
 	TIMER1_CTL |= 0x1; // Turn on TAEN
-
+	
 	// Setup Timer 1 B
 	
 	// Setup Timer 2 A
+
 	
 }
 
+int interpolate(int minSource, int maxSource, int minTarget, int maxTarget, int valueSource) {
+	int rangeSource = (maxSource - minSource);
+	int rangeTarget = (maxTarget - minTarget);
+	int valueTarget = (((valueSource - minSource) * rangeTarget) / rangeSource) + minTarget;
+	return valueTarget;
+}
+
 void SetLCDColour(int r, int g, int b) {
-	return;
+	int redMatch = 0xFFFF * r;
+	TIMER1_TAMATCH = interpolate(0, 100, 0, 0xFFF0, g);
+	int blueMatch = 0xFFFF * b;
 }
 
 
