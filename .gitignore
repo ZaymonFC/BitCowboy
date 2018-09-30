@@ -58,3 +58,4 @@ dkms.conf
 
 *.htm
 Graphics/tileCreator/node_modules
+.vscode

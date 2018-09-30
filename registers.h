@@ -72,3 +72,12 @@
 #define TIMER1_TAILR (*((volatile unsigned long *) 0x40031028))
 #define TIMER1_TAMATCH (*((volatile unsigned long *) 0x40031030))
 
+#define TIMER1_TBMR (*((volatile unsigned long *) 0x40031008))
+#define TIMER1_TBILR (*((volatile unsigned long *) 0x4003102C))
+#define TIMER1_TBMATCH (*((volatile unsigned long *) 0x40031034))
+
+#define TIMER2_CFG (*((volatile unsigned long *) 0x40032000))
+#define TIMER2_CTL (*((volatile unsigned long *) 0x4003200C))
+#define TIMER2_TAMR (*((volatile unsigned long *) 0x40032004))
+#define TIMER2_TAILR (*((volatile unsigned long *) 0x40032028))
+#define TIMER2_TAMATCH (*((volatile unsigned long *) 0x40032030))

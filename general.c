@@ -1,4 +1,5 @@
 #include "registers.h"
+
 void DelayMs(unsigned int);
 
 void DelayMs(unsigned int numLoops)
@@ -34,14 +35,7 @@ void Setup_GPIO_PWM_ForPin(int pinNumber){
 	GPIOF_PCTL |= (0x7 << (pinNumber * 4));
 }
 
-void SetupRGB_PWM()
-{
-	// Setup F2, F3, F4
-	Setup_GPIO_PWM_ForPin(2);
-	Setup_GPIO_PWM_ForPin(3);
-	Setup_GPIO_PWM_ForPin(4);
-	
-  // Setup Timer 1 A
+void SetupTimer1A() {
 	int timerBit = 0x1 << 1;
 	SYSCTL_RCGCTIMER |= timerBit;
 	while ((SYSCTL_PRTIMER & timerBit) != timerBit);
@@ -57,15 +51,70 @@ void SetupRGB_PWM()
 	TIMER1_TAMR &= ~0x3; // Clear TAMR
 	TIMER1_TAMR |= 0x2; // Set TAMR to Periodic
 
-	TIMER1_TAILR = 0xFFFF;
-	TIMER1_TAMATCH = 0xFFF0;
+	TIMER1_TAILR = 0xFFFF; // Set Preload
+	TIMER1_TAMATCH = 0xFFF0; // Default Match (100% brightness)
 
 	TIMER1_CTL |= 0x1; // Turn on TAEN
-	
-	// Setup Timer 1 B
-	
-	// Setup Timer 2 A
+}
 
+void SetupTimer1B() {
+	int timerBit = 0x1 << 1;
+	SYSCTL_RCGCTIMER |= timerBit;
+	while ((SYSCTL_PRTIMER & timerBit) != timerBit);
+
+	TIMER1_CTL &= ~(0x1 << 8); // Turn off TBEN (Bit 8)
+	TIMER1_CTL &= ~(0x1 << 14); // Not Inverted (Bit 14)
+
+	TIMER1_CFG &= ~0x7; // Clear (Bit 0-3)
+	TIMER1_CFG |= 0x4;  // 16 Bit Timer
+
+	TIMER1_TBMR |= 0x1 << 3; // Set TBAMS for PWM (Bit 3)
+	TIMER1_TBMR &= ~(0x1 << 2); // Clear TBCMR (Bit 2)
+	
+	TIMER1_TBMR &= ~0x3; // Clear TBMR
+	TIMER1_TBMR |= 0x2; // Set TBMR to Periodic
+
+	TIMER1_TBILR = 0xFFFF; // Set Preload
+	TIMER1_TBMATCH = 0xFFF0; // Default Match (100% brightness)
+
+	TIMER1_CTL |= 0x1 << 8; // Turn on TBEN (Bit 8)
+}
+
+void SetupTimer2A() {
+	int timerBit = 0x1 << 2;
+	SYSCTL_RCGCTIMER |= timerBit;
+	while ((SYSCTL_PRTIMER & timerBit) != timerBit);
+
+	TIMER2_CTL &= ~0x1; // Turn off TAEN (Bit 0)
+	TIMER2_CTL &= ~(0x1 << 6); // Not Inverted (Bit 6)
+	TIMER2_CFG &= ~0x7; // Clear (Bit 0-3)
+	TIMER2_CFG |= 0x4;  // 16 Bit Timer
+
+	TIMER2_TAMR |= 0x1 << 3; // Set TAAMS for PWM (Bit 3)
+	TIMER2_TAMR &= ~(0x1 << 2); // Clear TACMR (Bit 2)
+	
+	TIMER2_TAMR &= ~0x3; // Clear TAMR
+	TIMER2_TAMR |= 0x2; // Set TAMR to Periodic
+
+	TIMER2_TAILR = 0xFFFF; // Set Preload
+	TIMER2_TAMATCH = 0xFFF0; // Default Match (100% brightness)
+
+	TIMER2_CTL |= 0x1; // Turn on TAEN
+}
+
+void SetupRGB_PWM()
+{
+	Setup_GPIO_PWM_ForPin(2);
+	SetupTimer1A();
+
+	Setup_GPIO_PWM_ForPin(3);
+	SetupTimer1B();
+
+	Setup_GPIO_PWM_ForPin(4);
+	SetupTimer2A();	
+}
+
+void GPIO_Setup_Button(){
 	
 }
 
@@ -77,9 +126,9 @@ int interpolate(int minSource, int maxSource, int minTarget, int maxTarget, int 
 }
 
 void SetLCDColour(int r, int g, int b) {
-	int redMatch = 0xFFFF * r;
 	TIMER1_TAMATCH = interpolate(0, 100, 0, 0xFFF0, g);
-	int blueMatch = 0xFFFF * b;
+	TIMER1_TBMATCH = interpolate(0, 100, 0, 0xFFF0, b);
+	TIMER2_TAMATCH = interpolate(0, 100, 0, 0xFFF0, r);
 }
 
 
