@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "get-pixels": "^3.3.2"
+    "get-pixels": "^3.3.2",
+    "yargs": "^12.0.2"
   }
 }

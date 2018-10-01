@@ -53,7 +53,7 @@ void DrawTile(int tileNumber, int x, int y);
 
 // Test Functions
 void Test_PWM_LCD_LEDCOLOUR(void);
-
+void Test_GPIO_Setup_Button(void);
 
 int main(void)
 {
@@ -62,13 +62,15 @@ int main(void)
 		4,
 	  { 9, 9, 8, 9, 9, 8, 8, 3, 9, 3, 9, 9, 8, 8, 8, 9, 3, 3, 3, 3, 3, 3, 12, 3, 3, 3, 3, 3, 9, 9, 8, 3, 1, 3, 3, 3, 3, 1, 10, 11, 1, 1, 1, 3, 3, 3, 3, 10, 11, 5, 7, 5, 7, 5, 10, 11, 5, 12, 12, 5, 7, 7, 5, 10 }
 	};
+	const int MAP_TILES = map.height * map.width;
 
-	const int MAP_TILES = 12;
 	// --- Setup and testing --------------------------------------------------
 	SetupRGB_PWM();
 	Test_PWM_LCD_LEDCOLOUR();
 	
 	GPIO_Setup_Button();
+	Test_GPIO_Setup_Button();
+	SetLCDColour(10,10,10);
 	
 	GPIO_Setup_LCD();
 
@@ -76,23 +78,40 @@ int main(void)
 	LCD_Blank();
 	
 	
-	// `Game` Loop
-	int x = 0;
-	int increment = 1;
-	int colourIncrement = 2;
-	int green = 0;
+	// --- `Game` Loop --------------------------------------------------------
+//	int x = -100;
+//	int increment = 5;
+//	int colourIncrement = 2;
+//	int green = 0;
 
 	while(1) {
-		SetLCDColour(0, green, 0);
+		SetLCDColour(0, 100, 30);
+
+//		LCD_CLEAR_MAT();
+//		DrawMap(0, 0, &map, MAP_TILES);
+//		LCD_Refresh();
+//		DelayMs(50);
+
+//		LCD_CLEAR_MAT();
+//		DrawMap(-100, 0, &map, MAP_TILES);
+//		LCD_Refresh();
+//		DelayMs(50);
+
+//		LCD_CLEAR_MAT();
+//		DrawMap(0, -100, &map, MAP_TILES);
+//		LCD_Refresh();
+//		DelayMs(50);
+
 		LCD_CLEAR_MAT();
-		DrawMap(x, 0, &map, MAP_TILES);
+		DrawMap(-50, -25, &map, MAP_TILES);
 		LCD_Refresh();
-		DelayMs(2);
-		x += increment;
-		if (x == 200 || x == -100) increment = -increment;
+		DelayMs(50);
+
+		// // x += increment;
+		// if (x == 200 || x == -100) increment = -increment;
 		
-		green += colourIncrement;
-		if (green == 100 || green == 0) colourIncrement = -colourIncrement;
+		// green += colourIncrement;
+		// if (green == 100 || green == 0) colourIncrement = -colourIncrement;
 	}
 	
 }
@@ -107,28 +126,30 @@ void DrawMap(int xOffset, int yOffset, struct Map * map, const int MAP_TILES) {
 	int tileOffsetX = xOffset % 16;
 	int tileOffsetY = yOffset % 16;
 
-	for (int row = 0; row < SCREEN_TILES_HEIGHT; row++) {
+	for (int row = 0; row < SCREEN_TILES_HEIGHT + 1; row++) {
 		for (int col = 0; col < SCREEN_TILES_WIDTH + 1; col++) {
 			int x = col * 16 - tileOffsetX;
 			int y = row * 16 - tileOffsetY;
-			
-//			// Sanity Check that the current position is on the map
-//			if (tileX < 0 || tileX >= map->width)
-//				if (tileY < 0 || tileY >= map->height)
-//					return;
-			
+
 			// Calculate tile type based on tile position
-			int tile = col + tileX + (row * map->width);
+			int tile = (col + tileX) + ((row + tileY) * map->width);
+
+			// Sanity Check the Tile (Allow viewport over map boundary)
+			if (tile < 0 || tile >= MAP_TILES) continue;
+			if(tileX + col < 0 || tileX + col > map->width) continue;
+			if (tileY + row < 0 || tileY + row > map->height) continue;
+			
+			// Draw the tile at screen offset x, y
 			DrawTile(map->tiles[tile], x, y);
 		}
 	}
 }
 
-void DrawTile(int tileNumber, int xOffset, int yOffset) {
+void DrawTile(int tileNumber, int xPos, int yPos) {
 	if (tileNumber == 3) return;
 	for (int i = 0; i < 256; i++) {
-		int x = i % 16 + 1 + xOffset;
-		int y = (i / 16) + 1 + yOffset;
+		int x = i % 16 + 1 + xPos;
+		int y = (i / 16) + 1 + yPos;
 		LCD_PutPixel(x, y, tiles[tileNumber - 1][i]);
 	}
 }
@@ -159,4 +180,24 @@ void Test_PWM_LCD_LEDCOLOUR() {
 
 	SetLCDColour(75, 0, 30);
 	DelayMs(5);
+	
+	SetLCDColour(0, 100, 50);
+	DelayMs(5);
+}
+
+void Test_GPIO_Setup_Button() {
+	int pinValue = 0x1 << 6;
+	
+	int pressCount = 0;
+	// Green while button Pressed
+	while(pressCount < 2) {
+		if ((GPIOA_DATA & pinValue) != pinValue) {
+			SetLCDColour(100, 100, 100);
+			pressCount += 1;
+			DelayMs(5);
+		} else {
+			SetLCDColour(100, 0, 0);
+		}
+
+	}
 }

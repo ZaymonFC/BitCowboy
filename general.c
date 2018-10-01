@@ -115,7 +115,19 @@ void SetupRGB_PWM()
 }
 
 void GPIO_Setup_Button(){
+	int portAValue = 0x1; // Port A
+	int pinNumber = 6; // Pin 6
+	int pinValue = 0x1 << 6;
 	
+	SYSCTL_RCGCGPIO |= portAValue;
+	while ((SYSCTL_PRGPIO & portAValue) != portAValue);
+	
+	GPIOA_DEN |= pinValue; // Turn on digital enable
+	GPIOA_DIR &= ~pinValue; // Clear to set as input
+	// GPIOA_PUR |= pinValue;  // Set pull up resistor
+	GPIOA_PDR |= pinValue;
+	GPIOA_AFSEL &= ~pinValue; // Clear to set as regular GPIO
+	GPIOA_PCTL &= ~(0xF << (pinNumber * 4)); // Clear to 0 for normal GPIO
 }
 
 int interpolate(int minSource, int maxSource, int minTarget, int maxTarget, int valueSource) {
