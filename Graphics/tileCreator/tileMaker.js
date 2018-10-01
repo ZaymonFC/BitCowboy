@@ -11,8 +11,8 @@ const presets = {
     tileSet: {
         inputFile: '../Tileset.png',
         outputFile: '../Tileset.c',
-        varialeName: 'tiles',
-        numberOfTiles: 12,
+        variableName: 'tiles',
+        numberOfTiles: 16,
         tileWidth: 16,
         tileHeight: 16,
         columns: 6,
@@ -20,12 +20,21 @@ const presets = {
     sprite: {
         inputFile: '../spriteSheet.png',
         outputFile: '../spriteSheet.c',
-        varialeName: 'sprite',
+        variableName: 'sprite',
         numberOfTiles: 3,
         tileWidth: 9,
         tileHeight: 12,
         columns: 3,
-    }
+    },
+    alphabet: {
+        inputFile: '../alphabet.png',
+        outputFile: '../alphabet.c',
+        variableName: 'alphabet',
+        numberOfTiles: 26,
+        tileWidth: 5,
+        tileHeight: 7,
+        columns: 8,
+    },
 }
 
 const argv = require('yargs').argv
@@ -33,6 +42,8 @@ const argv = require('yargs').argv
 // Parse Commandline Arguments
 if (argv.sprite) {
     settings = presets.sprite
+} else if (argv.alphabet) {
+    settings = presets.alphabet
 } else {
     settings = presets.tileSet
 }
@@ -61,15 +72,17 @@ function createTileData(pixels, tileNumber) {
     // Calculate the coords of the current tile
     const coord = {
         x: (tileNumber * settings.tileWidth) % (settings.tileWidth * settings.columns),
-        y: (Math.floor(tileNumber / settings.tileHeight)) * settings.tileHeight
+        y: (Math.floor(tileNumber / settings.columns)) * settings.tileHeight
     }
+
+    console.log(coord)
 
     let data = []
     for (let row = coord.y; row < coord.y + settings.tileHeight; row++) {
         // Write the row into the data array
         for (let col = coord.x; col < coord.x + settings.tileWidth; col++) {
-            const pixel = pixels.get(col, row, 1)
-            if (pixel === 0) {
+            const pixel = pixels.get(col, row, 0)
+            if (pixel < 100) {
                 data.push(1)
             } else {
                 data.push(0)
@@ -90,7 +103,7 @@ function createCArrays(tileData) {
         cArrayStrings.push(pixels)
     }
 
-    let arrayString = `int ${settings.varialeName}[${settings.numberOfTiles}][${settings.tileHeight * settings.tileWidth}] = {\n`
+    let arrayString = `char ${settings.variableName}[${settings.numberOfTiles}][${settings.tileHeight * settings.tileWidth}] = {\n`
     for (let singleArray of cArrayStrings) {
         arrayString += `    { ${singleArray.slice(0, -1)} }, \n`
     }
