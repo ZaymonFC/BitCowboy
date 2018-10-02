@@ -130,13 +130,13 @@ int main(void) {
 
   // --- Setup and testing --------------------------------------------------
   SetupRGB_PWM();
-  // Test_PWM_LCD_LEDCOLOUR();
+  Test_PWM_LCD_LEDCOLOUR();
 
   GPIO_Setup_Button();
-  // Test_GPIO_Setup_Button();
+  Test_GPIO_Setup_Button();
 
   ADC_Setup_Joystick();
-  // Test_ADC_Joystick();
+  Test_ADC_Joystick();
 
   SetLCDColour(10, 10, 10);
 
@@ -160,17 +160,15 @@ int main(void) {
   int xVelocity = 0;
   int yVelocity = 0;
   bool inAir = true;
-
-  SetLCDColour(0, 100, 30);
   
   // Colour Values
-//  int lRed = 20;
-//  int lGreen = 40;
-//  int lBlue = 80;
-//  
-//  int rRed = 100;
-//  int rGreen = 50;
-//  int rBlue = 20;
+  int rLeft = 30;
+  int gLeft = 100;
+  int bLeft = 50;
+  
+  int rRight = 30;
+  int gRight = 30;
+  int bRight = 100;
 
   while (1) {
     // Pre-Update
@@ -243,11 +241,12 @@ int main(void) {
     LCD_Refresh();
 
     // --- Colour Management --------------------------------------------------
-//    int mapWidth = map.width * 16;
-//    int red = interpolate(0, mapWidth, lRed, rRed, playerPosition.x);
-//    int green = interpolate(0, mapWidth, lGreen, rGreen, playerPosition.x);
-//    int blue = interpolate(0, mapWidth, lBlue, rBlue, playerPosition.x);
-//    SetLCDColour(red, green, blue);
+    int mapWidth = map.width * 16;
+    int r = rLeft + (int)(((float)((float)rRight - (float)rLeft) / (float)mapWidth) * (float)playerPosition.x);
+	  int g = gLeft + (int)(((float)((float)gRight - (float)gLeft) / (float)mapWidth) * (float)playerPosition.x);
+	  int b = bLeft + (int)(((float)((float)bRight - (float)bLeft) / (float)mapWidth) * (float)playerPosition.x);
+
+    SetLCDColour(r, g, b);
   }
 }
 
