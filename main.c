@@ -1,5 +1,6 @@
 #include "registers.h"
 #include "types.h"
+#include "Data.h"
 
 extern void DelayMs(unsigned int);
 extern void DisableInterrupts(void);
@@ -10,14 +11,14 @@ extern void LCD_Contrast(int, int);
 extern void LCD_Refresh(void);
 extern void LCD_Blank(void);
 extern void LCD_Init(void);
-extern void GPIO_Setup_LCD(void);
 extern void LCD_CLEAR_MAT(void);
-extern void GPIO_Setup_Button(void);
 
+extern void GPIO_Setup_LCD(void);
+extern void GPIO_Setup_Button(void);
 extern void SetupRGB_PWM(void);
 extern void SetLCDColour(int r, int g, int b);
-
 extern void ADC_Setup_Joystick(void);
+
 extern long int GetJoystickValue(void);
 extern bool ButtonPushed(void);
 extern int interpolate(int, int, int, int, int);
@@ -30,15 +31,10 @@ unsigned int ABits[6] = {
 unsigned char APorts[6] = {
     'B', 'B', 'B',
     'B', 'B', 'B'}; // [CSport, RSTport, A0port, CLKport, DATport,B-]
-unsigned int APBases[6] = {0x40005000, 0x40005000, 0x40005000,
-                           0x40005000, 0x40005000, 0x40005000};
-
-// Type Definitions and #Defines
-typedef struct Map {
-  int width;
-  int height;
-  char tiles[128];
-} Map;
+unsigned int APBases[6] = {
+  0x40005000, 0x40005000, 0x40005000,
+  0x40005000, 0x40005000, 0x40005000
+};
 
 char tiles[16][256] = {
     { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 }, 
@@ -94,31 +90,28 @@ char alphabet[26][35] = {
     { 1,0,0,0,1,1,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0 }, 
 };
 
-const int SCREEN_TILES_WIDTH = 8;
-const int SCREEN_TILES_HEIGHT = 4;
-const int SPRITE_WIDTH = 9;
-const int SPRITE_HEIGHT = 12;
-
-bool DEATH = true;
-int DEATH_TILE = 16;
-typedef enum { idle, l, r } Orientation;
+bool DEATH = false;
+const int DEATH_TILE = 99;
+const int SKULL_TILE = 16;
+char currentCollisionTile = 0;
 
 /*
  * ─── FORWARD DECLARATIONS
  * ───────────────────────────────────────────────────────
  */
-void DrawMap(Position *viewPort, struct Map *map, const int MAP_TILES);
-void DrawTile(int tileNumber, int x, int y);
-void DrawPlayer(Position *playerPosition, Position *viewPort, Orientation);
-void CalculateViewPortCoordinates(Position *viewPort, Position *playerPosition);
+extern void DrawMap(Position *viewPort, struct Map *map, const int MAP_TILES);
+extern void DrawTile(int tileNumber, int x, int y);
+extern void DrawPlayer(Position *playerPosition, Position *viewPort, Orientation);
+extern void DrawText(int, int, char*, int);
+extern void CalculateViewPortCoordinates(Position *viewPort, Position *playerPosition);
+
 void CalculateCollisionDirection(Position *, Map *, CollisionInfo *);
-void DrawText(int, int, char*, int);
 void EndGame(void);
 
 // Test Functions
-void Test_PWM_LCD_LEDCOLOUR(void);
-void Test_GPIO_Setup_Button(void);
-void Test_ADC_Joystick(void);
+extern void Test_PWM_LCD_LEDCOLOUR(void);
+extern void Test_GPIO_Setup_Button(void);
+extern void Test_ADC_Joystick(void);
 
 int main(void) {
   Map map = {
@@ -152,12 +145,13 @@ int main(void) {
   LCD_Init();
   LCD_Blank();
 
-  // --- `Game` Loop --------------------------------------------------------
-  // Stock Variables
+  /*
+   * ─── GAME LOOP ──────────────────────────────────────────────────────────────────
+   */
   Position playerPosition = { 80, 15 };
   Position viewPort = { 0, 0 };
   Orientation orientation = idle;
-  CollisionInfo collisionInformation = { false, false, false };
+  CollisionInfo collisionInformation = { false, 0, false, 0, false, 0 };
 
   int playerSpeed = 2;
   int jumpSpeed = 6;
@@ -204,8 +198,15 @@ int main(void) {
     
     // Collisions
     CalculateCollisionDirection(&playerPosition, &collisionMap, &collisionInformation);
-    if(DEATH) {
+    if(collisionInformation.bottom && collisionInformation.bottomTile == DEATH_TILE) {
       EndGame();
+
+      playerPosition.x = 50;
+      playerPosition.y = 15;
+      xVelocity = 0;
+      yVelocity = 0;
+      inAir = false;
+      continue;
     }
 
     if (collisionInformation.right) {
@@ -250,119 +251,16 @@ int main(void) {
   }
 }
 
-void EndGame() {
-  LCD_CLEAR_MAT();
-
-  for (int i = 0; i < SCREEN_TILES_HEIGHT; i++) {
-    for (int j = 0; j < SCREEN_TILES_WIDTH; j++) {
-      int x = j * 16;
-      int y = i * 16;
-      if (i > 0 && i < 3) {
-        if (j > 1 && j < 6) {
-          continue;
-        }
-      }
-      DrawTile(DEATH_TILE, x, y);
-      LCD_Refresh();
-      DelayMs(2);
-    }
-  }
-  DrawText(41, 29, "gameover", 8);
-  LCD_Refresh();
-  DelayMs(50);
-}
-
-void CalculateViewPortCoordinates(Position *viewPort, Position *playerPosition) {
-  viewPort->x = playerPosition->x - 61;
-  // viewPort->y = playerPosition->y - 32;
-  viewPort->y = 0;
-}
-
-void DrawPlayer(Position *playerPosition, Position *viewPort, Orientation orientation) {
-  int screenX = playerPosition->x - viewPort->x;
-  int screenY = playerPosition->y - viewPort->y;
-
-  for (int x = 0; x < SPRITE_WIDTH; x++) {
-    for (int y = 0; y < SPRITE_HEIGHT; y++) {
-      int pixelValue = sprite[orientation][x + (y * SPRITE_WIDTH)];
-      if (pixelValue)
-        LCD_PutPixel(screenX + x, screenY + y, pixelValue);
-    }
-  }
-}
-
-void DrawMap(Position *viewPort, struct Map *map, const int MAP_TILES) {
-  // 'Intelligently' determine the range of tiles to draw and the offset for
-  // each tile. Calculate the tile coords of the top left tile on the screen
-  int xOffset = viewPort->x;
-  int yOffset = viewPort->y;
-
-  int tileX = xOffset / 16;
-  int tileY = yOffset / 16;
-
-  // Calculate the per tile offset
-  int tileOffsetX = xOffset % 16;
-  int tileOffsetY = yOffset % 16;
-  
-  for (int row = 0; row < SCREEN_TILES_HEIGHT + 1; row++) {
-    for (int col = 0; col < SCREEN_TILES_WIDTH + 1; col++) {
-      int x = col * 16 - tileOffsetX;
-      int y = row * 16 - tileOffsetY;
-
-      // Calculate tile type based on tile position
-      int tile = (col + tileX) + ((row + tileY) * map->width);
-
-      // Sanity Check the Tile (Allow viewport over map boundary)
-      if (tile < 0 || tile >= MAP_TILES) {
-        continue;
-      }
-      if (tileX + col < 0 || tileX + col >= map->width) {
-        continue;
-      }
-      if (tileY + row < 0 || tileY + row >= map->height) {
-        continue;
-      }
-
-      // Draw the tile at screen offset x, y
-      // LCD_PutPixel(tile, 10, 1);
-      DrawTile(map->tiles[tile], x, y);
-    }
-  }
-}
-
-void DrawTile(int tileNumber, int xPos, int yPos) {
-  if (tileNumber == 3)
-    return;
-  for (int i = 0; i < 256; i++) {
-    int x = i % 16 + 1 + xPos;
-    int y = (i / 16) + 1 + yPos;
-    LCD_PutPixel(x, y, tiles[tileNumber - 1][i]);
-  }
-}
-
-void DrawLetter(int x, int y, int letter) {
-  for (int r = 0; r < 7; r++) {
-    for (int c = 0; c < 5; c++) {
-      int tile = c + r * 5;
-      LCD_PutPixel(x + c, y + r, alphabet[letter][tile]);
-    }
-  }  
-}
-
-void DrawText(int x, int y, char * text, int length) {
-  int textX = x;
-  for (int i = 0; i < length; i++) {
-    int letter = (int)text[i] - 0x60;
-    DrawLetter(textX, y, letter);
-    textX += 6;
-  }
-}
-
 bool CollisionTile(int x, int y, Map * collisionMap) {
   int tile = x + (y * collisionMap->width);
   
-  if (tile < 0 || tile >= (collisionMap->width * collisionMap->height)) return false;
-  if (collisionMap->tiles[tile] == 2) return true;
+  if (tile < 0 || tile >= (collisionMap->width * collisionMap->height)) {
+    currentCollisionTile = 99;
+    return true;
+  }
+  int collisionTile = collisionMap->tiles[tile];
+  currentCollisionTile = collisionTile;
+  if (collisionTile == 2) return true;
   return false;
 }
 
@@ -381,8 +279,17 @@ void CalculateCollisionDirection(Position* playerPosition, Map* collisionMap, Co
   int tileRightX = tileX * 16 + 16;
   int tileBottomY = tileY * 16 + 16;
   
-  if (playerBottom > tileBottomY && CollisionTile(tileX, tileY + 1, collisionMap))
+  // Check bottom tile
+  if (playerBottom > tileBottomY && CollisionTile(tileX, tileY + 1, collisionMap)) {
     CI->bottom = true;
+    CI->bottomTile = currentCollisionTile;
+  }
+
+  // Sometimes the player will be overlapping two tiles below (Fixed tiles going through bottom right of player)
+  if (playerPosition->x % 16 > 7 && playerBottom > tileBottomY && CollisionTile(tileX + 1, tileY + 1, collisionMap)) {
+    CI->bottom = true;
+    CI->bottomTile = currentCollisionTile;
+  }
   
   // Might need to check tile to the side and bottom diagonal if player is over
   // the lower tile boundary
@@ -405,48 +312,24 @@ void CalculateCollisionDirection(Position* playerPosition, Map* collisionMap, Co
     CI->right = true;
 }
 
-/*
- * ──────────────────────────────────────────────────────────────────── I ──────────
- *   :::::: T E S T   F U N C T I O N S : :  :   :    :     :        : :
- * ──────────────────────────────────────────────────────────────────────────────
- */
-void Test_PWM_LCD_LEDCOLOUR() {
-  SetLCDColour(100, 100, 100);
-  DelayMs(5);
-  SetLCDColour(0, 100, 0);
-  DelayMs(5);
-  SetLCDColour(100, 0, 0);
-  DelayMs(5);
-  SetLCDColour(0, 0, 100);
-  DelayMs(5);
-  SetLCDColour(100, 0, 100);
-  DelayMs(5);
-  SetLCDColour(100, 100, 0);
-  DelayMs(5);
-  SetLCDColour(75, 0, 30);
-  DelayMs(5);
-  SetLCDColour(0, 100, 50);
-  DelayMs(5);
-}
+void EndGame() {
+  LCD_CLEAR_MAT();
 
-void Test_GPIO_Setup_Button() {
-  int pressCount = 0;
-  // Green while button Pressed
-  while (pressCount < 2) {
-    if (ButtonPushed()) {
-      SetLCDColour(100, 100, 100);
-      pressCount += 1;
-      DelayMs(6);
-    } else {
-      SetLCDColour(100, 0, 0);
+  for (int i = 0; i < SCREEN_TILES_HEIGHT; i++) {
+    for (int j = 0; j < SCREEN_TILES_WIDTH; j++) {
+      int x = j * 16;
+      int y = i * 16;
+      if (i > 0 && i < 3) {
+        if (j > 1 && j < 6) {
+          continue;
+        }
+      }
+      DrawTile(SKULL_TILE, x, y);
+      LCD_Refresh();
+      DelayMs(2);
     }
   }
-}
-
-void Test_ADC_Joystick() {
-  while((GPIOA_DATA & (0x1 << 6)) == (0x1 << 6)) {
-    long int joystickValue = GetJoystickValue();
-    int red = joystickValue;
-    SetLCDColour(red, red, red);
-  }
+  DrawText(41, 29, "gameover", 8);
+  LCD_Refresh();
+  DelayMs(100);
 }

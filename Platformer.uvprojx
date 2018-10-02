@@ -406,6 +406,16 @@
               <FileType>3</FileType>
               <FilePath>.\gpio_bits_lcd.o</FilePath>
             </File>
+            <File>
+              <FileName>Graphics.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Graphics.c</FilePath>
+            </File>
+            <File>
+              <FileName>test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\test.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
