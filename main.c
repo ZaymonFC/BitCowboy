@@ -237,7 +237,7 @@ int main(void) {
     CalculateViewPortCoordinates(&viewPort, &playerPosition);
     DrawMap(&viewPort, &map, MAP_TILES);
     DrawPlayer(&playerPosition, &viewPort, orientation);
-    DrawText(2, 2, "tivagame", 8);
+    DrawText(2, 2, "bitcowboy", 9);
     
     // Refresh
     LCD_Refresh();
@@ -314,7 +314,18 @@ void CalculateCollisionDirection(Position* playerPosition, Map* collisionMap, Co
 
 void EndGame() {
   LCD_CLEAR_MAT();
-
+  
+  DelayMs(5);
+  SetLCDColour(100, 100, 100);
+  DelayMs(1);
+  SetLCDColour(0, 0, 0);
+  DelayMs(1);
+  SetLCDColour(100, 100, 100);
+  DelayMs(1);
+  SetLCDColour(0, 0, 0);
+  DelayMs(1);
+  SetLCDColour(100, 100, 100);
+  
   for (int i = 0; i < SCREEN_TILES_HEIGHT; i++) {
     for (int j = 0; j < SCREEN_TILES_WIDTH; j++) {
       int x = j * 16;

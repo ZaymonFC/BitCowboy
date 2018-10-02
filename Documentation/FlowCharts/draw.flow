@@ -1,0 +1,24 @@
+DrawMap;
+(Calculate X, Y Tile Coordinates);
+Calculate X, Y Offset;
+for(row = 0; row < screenHeight; row++) {
+  for (col = 0; col < screenWidth; col++) {
+    x = col * tile width
+    y = row * tile width;
+    tile = col + tileX + ((row + tileY) * map width);
+    if (tile not in map) {
+      continue;
+    }
+    DrawTile(map[tile], x, y);
+  }
+}
+
+function DrawTile(tile, x, y) {
+  if (tile == blankTile) {
+    return;
+  }
+  for (i = 0; i < pixels per tile; i++) {
+    (calculatePixel x, y);
+    PutPixel(x, y, tile value (x, y));
+  }
+}
