@@ -9,4 +9,4 @@ Here are some of the core components of the project
 - [Tiva Setup](general.c)
 
 ## High Level Block Diagram
-![Project Block Diagram](Documentation/Project Block Diagram.png)
+![Project Block Diagram](Documentation/Project%20Block%20Diagram.png)
